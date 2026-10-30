@@ -277,7 +277,7 @@ export default defineConfig({
     // Optimisations de compilation & compression maximale
     build: {
       target: "es2022",
-      minify: "esbuild",
+      minify: true,
       cssMinify: true,
       cssCodeSplit: true,
       sourcemap: false,
