@@ -15,9 +15,19 @@ const isLocalhost =
   (window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1");
 
-const BASE_URL: string =
-  import.meta.env.VITE_API_URL ||
-  (isLocalhost ? "http://localhost:5000/api" : "/api");
+function resolveBaseUrl(): string {
+  const envUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+  if (envUrl) {
+    const cleaned = envUrl.replace(/\/$/, "");
+    if (cleaned.endsWith("/api") || cleaned.endsWith("/api/v1")) {
+      return cleaned;
+    }
+    return `${cleaned}/api`;
+  }
+  return isLocalhost ? "http://localhost:5000/api" : "/api";
+}
+
+const BASE_URL: string = resolveBaseUrl();
 
 /**
  * Instance Axios sécurisée et centralisée pour l'ensemble de l'application CleanPro.
