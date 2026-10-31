@@ -50,7 +50,19 @@ export const apiClient = axios.create({
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // Récupération éventuelle d'un token d'accès en mémoire (ou header CSRF)
+    // 1. Récupération éventuelle d'un token d'accès JWT pour immunité cross-origin (Vercel -> Render)
+    if (typeof window !== "undefined") {
+      try {
+        const storedToken = localStorage.getItem("cleanpro_token");
+        if (storedToken && config.headers && !config.headers["Authorization"]) {
+          config.headers["Authorization"] = `Bearer ${storedToken}`;
+        }
+      } catch {
+        // Ignorer les erreurs d'accès à localStorage
+      }
+    }
+
+    // 2. Récupération éventuelle du token CSRF
     const csrfToken = document.cookie
       .split("; ")
       .find((row) => row.startsWith("XSRF-TOKEN="))

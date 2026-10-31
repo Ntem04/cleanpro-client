@@ -35,6 +35,15 @@ export const authService = {
     try {
       const response = await apiClient.post<AuthResponse>("/auth/login", payload);
       const user = response.data?.data?.user || response.data?.user;
+      const token = response.data?.data?.token || (response.data as any)?.token;
+
+      if (token) {
+        try {
+          localStorage.setItem("cleanpro_token", token);
+        } catch {
+          // Ignore
+        }
+      }
 
       if (user) {
         try {
@@ -89,6 +98,7 @@ export const authService = {
 
     try {
       localStorage.removeItem("cleanpro_user");
+      localStorage.removeItem("cleanpro_token");
     } catch {
       // Ignore
     }
@@ -119,6 +129,7 @@ export const authService = {
     } catch (error) {
       try {
         localStorage.removeItem("cleanpro_user");
+        localStorage.removeItem("cleanpro_token");
       } catch {
         // Ignore
       }
