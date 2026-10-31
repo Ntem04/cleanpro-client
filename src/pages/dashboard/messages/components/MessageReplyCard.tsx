@@ -63,10 +63,19 @@ const MessageReplyCard = forwardRef<HTMLDivElement, MessageReplyCardProps>(
           setSendSuccess(null);
         }, 8000);
       } catch (error) {
-        setSendError(
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-            "Une erreur est survenue lors de l'envoi de l'e-mail. Vérifiez la configuration SMTP."
-        );
+        const err = error as { message?: string; response?: { data?: { message?: string } } };
+        const rawMessage = err.response?.data?.message || err.message || "";
+        // Conforme OWASP ASVS v4.0 & CWE-209 : Neutralisation de tout message divulguant l'infrastructure
+        const safeMessage =
+          rawMessage.includes("SMTP") ||
+          rawMessage.includes("ECONN") ||
+          rawMessage.includes("timeout") ||
+          rawMessage.includes("Brevo") ||
+          rawMessage.includes("fetch failed")
+            ? "Impossible d'expédier la réponse par e-mail pour le moment. Veuillez réessayer ultérieurement."
+            : rawMessage || "Une erreur est survenue lors de l'expédition de la réponse. Veuillez réessayer ultérieurement.";
+
+        setSendError(safeMessage);
       } finally {
         setIsSending(false);
       }
@@ -159,7 +168,7 @@ const MessageReplyCard = forwardRef<HTMLDivElement, MessageReplyCardProps>(
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
             <p className="text-xs text-slate-400">
-              Le message sera expédié par e-mail via Gmail SMTP et audité dans les logs de sécurité.
+              Le message sera expédié de manière sécurisée par e-mail au visiteur et consigné dans le journal d'audit.
             </p>
 
             <button
