@@ -51,10 +51,8 @@ const contactFormSchema = z.object({
     error:
       "Vous devez accepter le traitement de vos données pour envoyer ce message.",
   }),
-  // Champ Honeypot invisible pour détecter les bots
-  company_fax_field: z
-    .string()
-    .max(0, "Tentative de soumission automatisée détectée."),
+  // Champ Honeypot invisible pour détecter les bots (optionnel pour ne jamais bloquer l'autofill de Chrome)
+  company_fax_field: z.string().optional(),
 });
 
 type ContactFormData = {
@@ -186,6 +184,9 @@ export default function ContactFormSection() {
     if (errors[name as keyof ContactFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
+    if (status?.type === "error") {
+      setStatus(null);
+    }
   };
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -202,10 +203,10 @@ export default function ContactFormSection() {
         if (!fieldErrors[fieldName]) fieldErrors[fieldName] = issue.message;
       }
       setErrors(fieldErrors);
+      const firstError = validationResult.error.issues[0]?.message || "Le formulaire contient des erreurs. Veuillez vérifier les champs requis.";
       setStatus({
         type: "error",
-        message:
-          "Le formulaire contient des erreurs. Veuillez vérifier les champs requis.",
+        message: firstError,
       });
       return;
     }
