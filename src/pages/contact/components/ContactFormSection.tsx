@@ -220,7 +220,8 @@ export default function ContactFormSection() {
           subject: formData.subject,
           message: formData.message,
         });
-      } catch {
+      } catch (apiError) {
+        console.error("[CleanPro Contact] Erreur lors de l'appel API Backend :", apiError);
         // En cas de backend hors ligne ou en dev, poursuite avec enregistrement local
       }
 
